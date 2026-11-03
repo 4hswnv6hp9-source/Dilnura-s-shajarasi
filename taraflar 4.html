@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shajara — ota va ona taraf</title>
+<style>
+:root{--bg:linear-gradient(170deg,#1b1410 45%,#1c2a30);--card:#241b15;--ink:#f1e6d6;--mute:#b9a48c;--ota:#b8894f;--ona:#7fae8c;--pick:#e5826f;--blue:#5fa8c4}
+[data-theme=light]{--bg:#f6efe3;--card:#fffaf1;--ink:#2b1d12;--mute:#7a6650;--ota:#a3722f;--ona:#4f8a63}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;line-height:1.35}
+header{text-align:center;padding:1.8rem 1rem .5rem}
+h1{font-size:clamp(1.9rem,6vw,2.8rem);margin:0;font-weight:600}
+.tools,.panel{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem}
+button{font:inherit;color:inherit;cursor:pointer}
+.tools button{background:var(--card);color:var(--ink);border:2px solid var(--ota);border-radius:999px;padding:.4rem 1rem}
+.side{--line:var(--ota);max-width:1200px;margin:1.5rem auto 0;padding:0 .5rem}
+.side.ona{--line:var(--ona)}
+.side h2{margin:0;padding:0 .75rem;color:var(--line);font-size:1.5rem}
+.side h2 small{color:var(--mute);font-weight:400;font-size:.9rem}
+.scroll{display:flex;overflow-x:auto;padding:1rem .75rem 1.25rem}
+.tree{display:flex;align-items:flex-start;margin:0 auto}
+.tree,.tree ul{list-style:none;margin:0;padding:0}
+.tree ul{display:flex;justify-content:center;position:relative;padding-top:22px}
+.tree ul::before{content:"";position:absolute;top:0;left:50%;height:22px;border-left:3px solid var(--line)}
+.tree li{position:relative;display:flex;flex-direction:column;align-items:center;padding:22px 8px 0}
+.tree li::before,.tree li::after{content:"";position:absolute;top:0;width:50%;height:22px;border-top:3px solid var(--line)}
+.tree li::before{right:50%}
+.tree li::after{left:50%;border-left:3px solid var(--line)}
+.tree li:first-child::before,.tree li:last-child::after{border:0}
+.tree li:last-child::before{border-right:3px solid var(--line);border-radius:0 10px 0 0}
+.tree li:first-child::after{border-radius:10px 0 0 0}
+.tree li:only-child{padding-top:0}
+.tree li:only-child::before,.tree li:only-child::after{display:none}
+.tree>li{padding-top:0}
+.tree>li::before,.tree>li::after{display:none}
+.tree li.closed>ul{display:none}
+.node{display:flex;flex-direction:column;align-items:center}
+.card{width:138px;padding:.7rem .4rem .55rem;text-align:center;background:var(--card);border:3px solid var(--line);border-bottom-width:6px;border-radius:16px;cursor:pointer}
+.card.sel{border-color:var(--pick)}
+.card.pill{width:auto;padding:.5rem 1rem;border-radius:999px;background:var(--card);border-bottom-width:3px;cursor:default;color:var(--mute);font-size:.9rem}
+.av{width:46px;height:46px;margin:0 auto .3rem;border-radius:50%;display:grid;place-items:center;font-size:1.35rem;font-weight:700;color:#fff;background:var(--avc,#8a7a6a)}
+.g{font-weight:700;font-size:1rem}
+.s{font-size:.88rem}
+.m{font-size:.8rem;color:var(--mute)}
+.sp{font-size:.82rem;color:var(--pick)}
+.tg{margin-top:6px;border:0;border-radius:999px;background:var(--blue);color:#fff;font-size:.85rem;font-weight:700;padding:.1rem .75rem}
+.panel{flex-direction:column;align-items:center;text-align:center;margin:0 .75rem;padding:1rem;border:2px dashed var(--line);border-radius:20px;background:var(--card);gap:.15rem}
+.panel h3{margin:0;font-size:1.6rem}
+.panel p{margin:0}
+.bdg{background:var(--blue);color:#fff;border-radius:999px;padding:.05rem .8rem;font-size:.85rem}
+.hint{color:var(--mute)}
+footer{max-width:640px;margin:1.5rem auto 0;padding:0 1.25rem 2.5rem;color:var(--mute);font-size:.85rem;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Oila shajarasi</h1>
+  <div class="tools" style="margin-top:.8rem">
+    <button id="open">🌿 Hammasini och</button><button id="shut">🍂 Yig‘ish</button><button id="mode">🌓 Rejim</button>
+  </div>
+</header>
+<div id="app"></div>
+<footer>Ota tarafda aka-uka va ota-bola aloqalari ko‘rsatilgan. Ona tarafda juftliklar hali bir-biriga ulanmagan. Tahrirlash: pastdagi <code>OTA</code> va <code>ONA</code> ro‘yxatlari.</footer>
+
+<script>
+// n = "Familiya Ism", b = tug'ilgan yil, d = vafot yili, s = [juft ismi, tug'ilgan, vafot], k = farzandlar
+const OTA = [{ n:"Xamdamov Murod", b:1915, d:1984, s:["Murodova Ogiloy",1917,1990], k:[
+  { n:"Xamdamov Rustam", b:1940, d:2012, s:["Turgunova Gulsara",1942], k:[
+    { n:"Xamdamov Baxtiyor", b:1963, k:[ { n:"Xamdamov Jamshid", b:1985 }, { n:"Xamdamova Dilnoza", b:1988 } ] },
+    { n:"Xamdamova Malika", b:1966 },
+    { n:"Xamdamov Bastam", b:1967, s:["Kenjayeva Nasiba",1969], k:[ { n:"Rustamova Dilnura", b:2008 } ] } ] } ] }];
+const C = (n,b,d,s,sb,sd) => ({ n, b, d, s:[s,sb,sd] });
+const ONA = [
+  C("Karimov Raxmatillo",1862,1938,"Karimova Salamat",1868,1942),
+  C("Axmedov Axmat",1885,1950,"Axmedova Sanam",1889,1954),
+  C("Yuldashev Kenja",1902,1967,"Yuldasheva Xosiyat",1906,1972),
+  C("Abdullayev Avral",1908,1970,"Abdullayeva Robiya",1912,1978),
+  C("Mirzayev Asror",1918,1985,"Mirzayeva Oykiz",1921,1990),
+  C("Tursunov Ambar",1924,1992,"Tursunova Manzura",1927,1998),
+  C("Kokonov Kokan",1931,2010,"Kokanova Samara",1935,2021)
+];
+const AVC = ["#3f8fb0","#c4584c","#8e5bb5","#4f9a55","#d79a3a"];
+const reg = {}; let seq = 0;
+const given = n => n.split(" ")[1] || n, sur = n => n.split(" ")[0];
+const cnt = n => (n.k || []).reduce((s,x) => s + 1 + cnt(x), 0);
+const people = n => (n.pill ? 0 : 1 + (n.s ? 1 : 0)) + (n.k || []).reduce((s,x) => s + people(x), 0);
+
+function li(n, av, parent) {
+  const id = ++seq, kids = n.k || [];
+  reg[id] = { n, av, parent };
+  const card = n.pill
+    ? `<div class="card pill">${n.pill}</div>`
+    : `<div class="card" data-id="${id}"><div class="av" style="--avc:${av ? AVC[(av - 1) % 5] : "#8a7a6a"}">${given(n.n)[0]}</div>
+       <div class="g">${given(n.n)}</div><div class="s">${sur(n.n)}</div><div class="m">🎂 ${n.b}</div>${n.d ? `<div class="m">🕊 ${n.d}</div>` : ""}
+       ${av ? `<div class="m">${av}-avlod</div>` : ""}${n.s ? `<div class="sp">💍 ${given(n.s[0])}</div>` : ""}</div>`;
+  const tg = kids.length ? `<button class="tg" data-n="${kids.length}">▾ ${kids.length}</button>` : "";
+  const next = n.pill ? null : (av ? av + 1 : null);
+  return `<li><div class="node">${card}${tg}</div>${kids.length ? `<ul>${kids.map(k => li(k, next, n)).join("")}</ul>` : ""}</li>`;
+}
+const side = (cls, title, roots, total) =>
+  `<section class="side ${cls}"><h2>${title} <small>${total} kishi</small></h2><div class="scroll"><ul class="tree">${roots.map(r => li(r, r.pill ? null : 1, null)).join("")}</ul></div>
+   <div class="panel"><span class="hint">Kartani bosing, ma’lumoti shu yerda chiqadi</span></div></section>`;
+app.innerHTML = side("ota","Ota taraf",OTA,OTA.reduce((s,x)=>s+people(x),0)) + side("ona","Ona taraf",ONA,ONA.reduce((s,x)=>s+people(x),0));
+
+document.querySelectorAll(".scroll").forEach(x => x.scrollLeft = (x.scrollWidth - x.clientWidth) / 2);
+function show(card) {
+  const sec = card.closest(".side"), r = reg[card.dataset.id], n = r.n, kids = n.k || [], c = cnt(n);
+  sec.querySelectorAll(".card.sel").forEach(x => x.classList.remove("sel")); card.classList.add("sel");
+  const row = t => `<p>${t}</p>`;
+  sec.querySelector(".panel").innerHTML = `<h3>${given(n.n)} ${sur(n.n)}</h3>${r.av ? `<span class="bdg">${r.av}-avlod</span>` : ""}`
+    + row(`Tug‘ilgan yili: ${n.b}`) + (n.d ? row(`Vafot etgan yili: ${n.d}`) : "")
+    + (r.parent ? row(`Ota/ona: ${given(r.parent.n)}`) : "")
+    + (n.s ? row(`Turmush o‘rtog‘i: ${n.s[0]} (${n.s[1]}${n.s[2] ? "–" + n.s[2] : ""})`) : "")
+    + (kids.length ? row(`Farzandlari: ${kids.map(k => given(k.n)).join(", ")}`) : "")
+    + (c ? row(`Jami avlodi: ${c} kishi`) : "");
+}
+function fold(item, closed) {
+  item.classList.toggle("closed", closed);
+  const b = item.querySelector(":scope > .node > .tg");
+  if (b) b.textContent = (closed ? "▸ " : "▾ ") + b.dataset.n;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest(".tg");
+  if (t) { const item = t.closest("li"); fold(item, !item.classList.contains("closed")); return; }
+  const c = e.target.closest(".card[data-id]"); if (c) show(c);
+});
+const all = closed => document.querySelectorAll("li").forEach(i => i.querySelector(":scope > ul") && fold(i, closed));
+open.onclick = () => all(false); shut.onclick = () => all(true);
+mode.onclick = () => { const h = document.documentElement; h.dataset.theme = h.dataset.theme === "dark" ? "light" : "dark"; };
+</script>
+</body>
+</html>
